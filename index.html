@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Calculador de Precio Final</title>
+  <title>Calculador</title>
 </head>
 
 <body>
@@ -12,9 +12,9 @@
 
   <input id="codigo" placeholder="Código">
   <input id="nombre" placeholder="Nombre">
-  <input id="costo_base" type="number" placeholder="Costo base">
-  <input id="descuento" type="number" placeholder="Descuento %">
-  <input id="iva" type="number" placeholder="IVA %">
+  <input id="costo_base" type="number" placeholder="Costo">
+  <input id="descuento" type="number" placeholder="Descuento">
+  <input id="iva" type="number" placeholder="IVA">
 
   <button onclick="calcular()">Calcular</button>
 
@@ -22,23 +22,9 @@
 
   <script>
 
-    // 🔥 TU BACKEND EN RENDER (YA CONFIGURADO)
     const API_URL = "https://backend-calculador-8c3l.onrender.com";
 
     function calcular() {
-
-      const codigo = document.getElementById("codigo").value;
-      const nombre = document.getElementById("nombre").value;
-      const costo = Number(document.getElementById("costo_base").value);
-      const descuento = Number(document.getElementById("descuento").value);
-      const iva = Number(document.getElementById("iva").value);
-
-      // ⚠️ VALIDACIÓN PARA EVITAR 422
-      if (!codigo || !nombre || isNaN(costo) || isNaN(descuento) || isNaN(iva)) {
-        document.getElementById("resultado").innerHTML =
-          "⚠️ Completa todos los campos correctamente";
-        return;
-      }
 
       fetch(API_URL + "/calcular/valorfinal", {
         method: "POST",
@@ -46,30 +32,24 @@
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          codigo: codigo,
-          nombre: nombre,
-          costo_base: costo,
-          descuento: descuento,
-          iva: iva
+          codigo: document.getElementById("codigo").value,
+          nombre: document.getElementById("nombre").value,
+          costo_base: Number(document.getElementById("costo_base").value),
+          descuento: Number(document.getElementById("descuento").value),
+          iva: Number(document.getElementById("iva").value)
         })
       })
-        .then(res => res.json())
-        .then(data => {
+      .then(r => r.json())
+      .then(data => {
 
-          console.log(data);
+        document.getElementById("resultado").innerHTML =
+          "<p>Total: " + data.valor_final + "</p>";
 
-          document.getElementById("resultado").innerHTML = `
-            <p><b>Valor base:</b> ${data.valor_base}</p>
-            <p><b>Descuento:</b> ${data.descuento_aplicado}%</p>
-            <p><b>IVA:</b> ${data.iva_aplicado}%</p>
-            <h3><b>Total:</b> ${data.valor_final}</h3>
-          `;
-        })
-        .catch(error => {
-          console.error(error);
-          document.getElementById("resultado").innerHTML =
-            "❌ Error al conectar con el backend";
-        });
+      })
+      .catch(err => {
+        console.log(err);
+        document.getElementById("resultado").innerHTML = "Error conexión";
+      });
 
     }
 
