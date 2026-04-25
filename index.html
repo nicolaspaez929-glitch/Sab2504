@@ -67,7 +67,6 @@
 
 <script>
 
-  // 🔥 TU BACKEND REAL EN RENDER
   const API_URL = "https://backend-calculador-8c3l.onrender.com";
 
   function calcular() {
@@ -78,19 +77,6 @@
     const costo_base = Number(document.getElementById("costo_base").value);
     const descuento = Number(document.getElementById("descuento").value);
     const iva = Number(document.getElementById("iva").value);
-
-    // 🔴 VALIDACIÓN PARA EVITAR 422
-    if (
-      !codigo ||
-      !nombre ||
-      isNaN(costo_base) ||
-      isNaN(descuento) ||
-      isNaN(iva)
-    ) {
-      document.getElementById("resultado").innerHTML =
-        "⚠️ Completa todos los campos correctamente";
-      return;
-    }
 
     const payload = {
       codigo,
@@ -109,30 +95,48 @@
       },
       body: JSON.stringify(payload)
     })
-    .then(async res => {
+    .then(async (res) => {
 
+      const data = await res.json();
+
+      // ❌ ERROR (incluye 422, 404, etc.)
       if (!res.ok) {
-        const error = await res.json();
-        console.log("ERROR BACKEND:", error);
-        throw new Error("Error en backend");
+
+        console.log("ERROR BACKEND:", data);
+
+        document.getElementById("resultado").innerHTML = `
+          <h3>❌ Error en los datos</h3>
+          <p><b>Valor base:</b> 0</p>
+          <p><b>Descuento:</b> 0%</p>
+          <p><b>IVA:</b> 0%</p>
+          <p><b>Detalle:</b> ${
+            data.detail ? JSON.stringify(data.detail) : "Datos inválidos"
+          }</p>
+        `;
+
+        return;
       }
 
-      return res.json();
-    })
-    .then(data => {
-
+      // ✅ ÉXITO (200)
       document.getElementById("resultado").innerHTML = `
+        <h3>${data.titulo}</h3>
         <p><b>Valor base:</b> ${data.valor_base}</p>
         <p><b>Descuento:</b> ${data.descuento_aplicado}%</p>
         <p><b>IVA:</b> ${data.iva_aplicado}%</p>
         <h3><b>Total:</b> ${data.valor_final}</h3>
       `;
-
     })
     .catch(err => {
+
       console.error(err);
-      document.getElementById("resultado").innerHTML =
-        "❌ Error conectando con el backend o datos inválidos";
+
+      document.getElementById("resultado").innerHTML = `
+        <h3>❌ Error de conexión</h3>
+        <p><b>Valor base:</b> 0</p>
+        <p><b>Descuento:</b> 0%</p>
+        <p><b>IVA:</b> 0%</p>
+        <p><b>Total:</b> 0</p>
+      `;
     });
 
   }
