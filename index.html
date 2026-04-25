@@ -56,7 +56,7 @@
 
   <input id="codigo" placeholder="Código producto">
   <input id="nombre" placeholder="Nombre producto">
-  <input id="costo" type="number" placeholder="Costo base">
+  <input id="costo_base" type="number" placeholder="Costo base">
   <input id="descuento" type="number" placeholder="Descuento %">
   <input id="iva" type="number" placeholder="IVA %">
 
@@ -67,43 +67,63 @@
 
 <script>
 
-  // ✅ TU BACKEND REAL EN RENDER
+  // 🔥 TU BACKEND REAL EN RENDER
   const API_URL = "https://backend-calculador-8c3l.onrender.com";
 
-  async function calcular() {
+  function calcular() {
 
-    const payload = {
-      codigo: document.getElementById("codigo").value,
-      nombre: document.getElementById("nombre").value,
-      costo_base: parseFloat(document.getElementById("costo").value),
-      descuento: parseFloat(document.getElementById("descuento").value),
-      iva: parseFloat(document.getElementById("iva").value)
+    // 🔴 TOMAR VALORES
+    const codigo = document.getElementById("codigo").value.trim();
+    const nombre = document.getElementById("nombre").value.trim();
+    const costo_base = parseFloat(document.getElementById("costo_base").value);
+    const descuento = parseFloat(document.getElementById("descuento").value);
+    const iva = parseFloat(document.getElementById("iva").value);
+
+    // ⚠️ VALIDACIÓN (EVITA 422)
+    if (!codigo || !nombre || isNaN(costo_base) || isNaN(descuento) || isNaN(iva)) {
+      document.getElementById("resultado").innerHTML =
+        "⚠️ Por favor completa todos los campos correctamente";
+      return;
+    }
+
+    // 📦 PAYLOAD CORRECTO
+    const data = {
+      codigo,
+      nombre,
+      costo_base,
+      descuento,
+      iva
     };
 
-    try {
-      const response = await fetch(`${API_URL}/calcular/valorfinal`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+    console.log("ENVIANDO:", data);
 
-      const data = await response.json();
+    // 🚀 FETCH AL BACKEND
+    fetch(`${API_URL}/calcular/valorfinal`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(response => {
+
+      console.log("RESPUESTA:", response);
 
       document.getElementById("resultado").innerHTML = `
-        <h3>${data.titulo}</h3>
-        <p><b>Valor base:</b> ${data.valor_base}</p>
-        <p><b>Descuento:</b> ${data.descuento_aplicado}%</p>
-        <p><b>IVA:</b> ${data.iva_aplicado}%</p>
-        <h3><b>Total:</b> ${data.valor_final}</h3>
+        <h3>${response.titulo}</h3>
+        <p><b>Valor base:</b> ${response.valor_base}</p>
+        <p><b>Descuento:</b> ${response.descuento_aplicado}%</p>
+        <p><b>IVA:</b> ${response.iva_aplicado}%</p>
+        <h3><b>Total:</b> ${response.valor_final}</h3>
       `;
-
-    } catch (error) {
+    })
+    .catch(error => {
       console.error(error);
       document.getElementById("resultado").innerHTML =
-        "Error conectando con el backend";
-    }
+        "❌ Error conectando con el backend";
+    });
+
   }
 
 </script>
