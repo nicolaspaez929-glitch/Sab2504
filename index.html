@@ -22,7 +22,7 @@
 
   <script>
 
-    // 🔥 CAMBIA SOLO ESTA LÍNEA (TU BACKEND EN RENDER)
+    // 🔥 TU BACKEND EN RENDER (YA CONFIGURADO)
     const API_URL = "https://backend-calculador-8c3l.onrender.com";
 
     function calcular() {
@@ -33,9 +33,10 @@
       const descuento = Number(document.getElementById("descuento").value);
       const iva = Number(document.getElementById("iva").value);
 
-      // 🔴 VALIDACIÓN BÁSICA (EVITA 422)
+      // ⚠️ VALIDACIÓN PARA EVITAR 422
       if (!codigo || !nombre || isNaN(costo) || isNaN(descuento) || isNaN(iva)) {
-        document.getElementById("resultado").innerHTML = "⚠️ Completa todos los campos correctamente";
+        document.getElementById("resultado").innerHTML =
+          "⚠️ Completa todos los campos correctamente";
         return;
       }
 
@@ -66,7 +67,8 @@
         })
         .catch(error => {
           console.error(error);
-          document.getElementById("resultado").innerHTML = "❌ Error de conexión con el backend";
+          document.getElementById("resultado").innerHTML =
+            "❌ Error al conectar con el backend";
         });
 
     }
