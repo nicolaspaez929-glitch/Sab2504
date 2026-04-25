@@ -1,108 +1,77 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Calculador de Precio Final</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0d0f14;
-      color: white;
-      display: flex;
-      justify-content: center;
-      padding: 40px;
-    }
-
-    .container {
-      background: #1c2030;
-      padding: 20px;
-      border-radius: 10px;
-      width: 400px;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 5px;
-      border: none;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #00e5a0;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .result {
-      margin-top: 15px;
-      background: #15181f;
-      padding: 10px;
-      border-radius: 5px;
-    }
-  </style>
 </head>
 
 <body>
 
-<div class="container">
   <h2>Calculador de Precio Final</h2>
 
-  <input id="codigo" placeholder="Código producto">
-  <input id="nombre" placeholder="Nombre producto">
-  <input id="costo" type="number" placeholder="Costo base">
+  <input id="codigo" placeholder="Código">
+  <input id="nombre" placeholder="Nombre">
+  <input id="costo_base" type="number" placeholder="Costo base">
   <input id="descuento" type="number" placeholder="Descuento %">
   <input id="iva" type="number" placeholder="IVA %">
 
   <button onclick="calcular()">Calcular</button>
 
-  <div class="result" id="resultado"></div>
-</div>
+  <div id="resultado"></div>
 
-<script>
-  // 🔥 CAMBIA ESTA URL POR LA DE TU BACKEND EN RENDER
-  const API_URL = "https://backend-calculador-8c3l.onrender.com";
+  <script>
 
-  async function calcular() {
-    const payload = {
-      codigo: document.getElementById("codigo").value,
-      nombre: document.getElementById("nombre").value,
-      costo_base: parseFloat(document.getElementById("costo").value),
-      descuento: parseFloat(document.getElementById("descuento").value),
-      iva: parseFloat(document.getElementById("iva").value)
-    };
+    // 🔥 CAMBIA SOLO ESTA LÍNEA (TU BACKEND EN RENDER)
+    const API_URL = "https://backend-calculador-8c3l.onrender.com";
 
-    try {
-      const response = await fetch(`${API_URL}/calcular/valorfinal`, {
+    function calcular() {
+
+      const codigo = document.getElementById("codigo").value;
+      const nombre = document.getElementById("nombre").value;
+      const costo = Number(document.getElementById("costo_base").value);
+      const descuento = Number(document.getElementById("descuento").value);
+      const iva = Number(document.getElementById("iva").value);
+
+      // 🔴 VALIDACIÓN BÁSICA (EVITA 422)
+      if (!codigo || !nombre || isNaN(costo) || isNaN(descuento) || isNaN(iva)) {
+        document.getElementById("resultado").innerHTML = "⚠️ Completa todos los campos correctamente";
+        return;
+      }
+
+      fetch(API_URL + "/calcular/valorfinal", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(payload)
-      });
+        body: JSON.stringify({
+          codigo: codigo,
+          nombre: nombre,
+          costo_base: costo,
+          descuento: descuento,
+          iva: iva
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
 
-      const data = await response.json();
+          console.log(data);
 
-      document.getElementById("resultado").innerHTML = `
-        <h3>${data.titulo}</h3>
-        <p><b>Valor base:</b> ${data.valor_base}</p>
-        <p><b>Descuento:</b> ${data.descuento_aplicado}%</p>
-        <p><b>IVA:</b> ${data.iva_aplicado}%</p>
-        <h3><b>Total:</b> ${data.valor_final}</h3>
-      `;
+          document.getElementById("resultado").innerHTML = `
+            <p><b>Valor base:</b> ${data.valor_base}</p>
+            <p><b>Descuento:</b> ${data.descuento_aplicado}%</p>
+            <p><b>IVA:</b> ${data.iva_aplicado}%</p>
+            <h3><b>Total:</b> ${data.valor_final}</h3>
+          `;
+        })
+        .catch(error => {
+          console.error(error);
+          document.getElementById("resultado").innerHTML = "❌ Error de conexión con el backend";
+        });
 
-    } catch (error) {
-      document.getElementById("resultado").innerHTML =
-        "Error conectando con el backend";
     }
-  }
-</script>
+
+  </script>
 
 </body>
 </html>
