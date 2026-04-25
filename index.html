@@ -72,22 +72,27 @@
 
   function calcular() {
 
-    // 🔴 TOMAR VALORES
     const codigo = document.getElementById("codigo").value.trim();
     const nombre = document.getElementById("nombre").value.trim();
-    const costo_base = parseFloat(document.getElementById("costo_base").value);
-    const descuento = parseFloat(document.getElementById("descuento").value);
-    const iva = parseFloat(document.getElementById("iva").value);
 
-    // ⚠️ VALIDACIÓN (EVITA 422)
-    if (!codigo || !nombre || isNaN(costo_base) || isNaN(descuento) || isNaN(iva)) {
+    const costo_base = Number(document.getElementById("costo_base").value);
+    const descuento = Number(document.getElementById("descuento").value);
+    const iva = Number(document.getElementById("iva").value);
+
+    // 🔴 VALIDACIÓN PARA EVITAR 422
+    if (
+      !codigo ||
+      !nombre ||
+      isNaN(costo_base) ||
+      isNaN(descuento) ||
+      isNaN(iva)
+    ) {
       document.getElementById("resultado").innerHTML =
-        "⚠️ Por favor completa todos los campos correctamente";
+        "⚠️ Completa todos los campos correctamente";
       return;
     }
 
-    // 📦 PAYLOAD CORRECTO
-    const data = {
+    const payload = {
       codigo,
       nombre,
       costo_base,
@@ -95,33 +100,39 @@
       iva
     };
 
-    console.log("ENVIANDO:", data);
+    console.log("ENVIANDO:", payload);
 
-    // 🚀 FETCH AL BACKEND
     fetch(`${API_URL}/calcular/valorfinal`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(payload)
     })
-    .then(res => res.json())
-    .then(response => {
+    .then(async res => {
 
-      console.log("RESPUESTA:", response);
+      if (!res.ok) {
+        const error = await res.json();
+        console.log("ERROR BACKEND:", error);
+        throw new Error("Error en backend");
+      }
+
+      return res.json();
+    })
+    .then(data => {
 
       document.getElementById("resultado").innerHTML = `
-        <h3>${response.titulo}</h3>
-        <p><b>Valor base:</b> ${response.valor_base}</p>
-        <p><b>Descuento:</b> ${response.descuento_aplicado}%</p>
-        <p><b>IVA:</b> ${response.iva_aplicado}%</p>
-        <h3><b>Total:</b> ${response.valor_final}</h3>
+        <p><b>Valor base:</b> ${data.valor_base}</p>
+        <p><b>Descuento:</b> ${data.descuento_aplicado}%</p>
+        <p><b>IVA:</b> ${data.iva_aplicado}%</p>
+        <h3><b>Total:</b> ${data.valor_final}</h3>
       `;
+
     })
-    .catch(error => {
-      console.error(error);
+    .catch(err => {
+      console.error(err);
       document.getElementById("resultado").innerHTML =
-        "❌ Error conectando con el backend";
+        "❌ Error conectando con el backend o datos inválidos";
     });
 
   }
